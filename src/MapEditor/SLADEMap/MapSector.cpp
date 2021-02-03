@@ -28,6 +28,8 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
+#include "Game/Game.h"
+#include "MapEditor/SLADEMap/MapObject.h"
 #include "MapSector.h"
 #include "MapLine.h"
 #include "MapSide.h"
@@ -556,6 +558,7 @@ void MapSector::changeLight(int amount, int where)
  *******************************************************************/
 rgba_t MapSector::getColour(int where, bool fullbright)
 {
+	using Game::Feature;
 	using Game::UDMFFeature;
 
 	// Check for sector colour set in open script
@@ -586,22 +589,41 @@ rgba_t MapSector::getColour(int where, bool fullbright)
 	// Check for UDMF
 	if (parent_map->currentFormat() == MAP_UDMF &&
 		(Game::configuration().featureSupported(UDMFFeature::SectorColor) ||
-		Game::configuration().featureSupported(UDMFFeature::FlatLighting)))
+		Game::configuration().featureSupported(UDMFFeature::FlatLighting) ||
+		Game::configuration().featureSupported(Feature::MaterialColors)))
 	{
 		// Get sector light colour
-		wxColour wxcol;
+		rgba_t wxcol;
+		rgba_t col {255, 255, 255, 255};
+
 		if(Game::configuration().featureSupported(UDMFFeature::SectorColor))
 		{
 			int intcol = MapObject::intProperty("lightcolor");
-			wxcol = wxColour(intcol);
+			wxcol = rgba_t::fromIntColour(intcol);
+			col = col.ampf(wxcol.fr(), wxcol.fg(), wxcol.fb(), 1.0);
 		}
-		else
-			wxcol = wxColour(255, 255, 255, 255);
-		
+
+		if (Game::configuration().featureSupported(Feature::MaterialColors))
+		{
+			if (where == 1)
+			{
+				// Floor
+				int intcol = MapObject::intProperty("color_floor");
+				wxcol = rgba_t::fromIntColour(intcol);
+				col = col.ampf(wxcol.fr(), wxcol.fg(), wxcol.fb(), 1.0);
+			}
+			else if (where == 2)
+			{
+				// Ceiling
+				int intcol = MapObject::intProperty("color_ceiling");
+				wxcol = rgba_t::fromIntColour(intcol);
+				col = col.ampf(wxcol.fr(), wxcol.fg(), wxcol.fb(), 1.0);
+			}
+		}
 
 		// Ignore light level if fullbright
 		if (fullbright)
-			return rgba_t(wxcol.Blue(), wxcol.Green(), wxcol.Red(), 255);
+			return rgba_t(col);
 
 		// Get sector light level
 		int ll = light;
@@ -637,7 +659,7 @@ rgba_t MapSector::getColour(int where, bool fullbright)
 
 		// Calculate and return the colour
 		float lightmult = (float)ll / 255.0f;
-		return rgba_t(wxcol.Blue() * lightmult, wxcol.Green() * lightmult, wxcol.Red() * lightmult, 255);
+		return col.ampf(lightmult, lightmult, lightmult, 1.0);
 	}
 
 	// Other format, simply return the light level

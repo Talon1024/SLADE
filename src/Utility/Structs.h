@@ -375,6 +375,15 @@ struct rgba_t
 		uint8_t l = (uint8_t) round(r*0.3+g*0.59+b*0.11);
 		return rgba_t(l, l, l, a, blend);
 	}
+
+	static rgba_t fromIntColour(unsigned int intcolour)
+	{
+		uint8_t r = ((intcolour >> 16) & 0xFF);
+		uint8_t g = ((intcolour >> 8) & 0xFF);
+		uint8_t b = intcolour & 0xFF;
+		uint8_t a = ((intcolour >> 24) & 0xFF);
+		return rgba_t(r, g, b, a);
+	}
 };
 
 // Some basic colours

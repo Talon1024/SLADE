@@ -26,6 +26,7 @@ namespace Game
 		MixTexFlats,
 		TxTextures,
 		LongNames,
+		MaterialColors,		// Doom 64 lighting/material colors
 	};
 	enum class UDMFFeature
 	{

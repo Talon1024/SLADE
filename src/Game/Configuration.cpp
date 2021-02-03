@@ -424,6 +424,10 @@ void Configuration::readGameSection(ParseTreeNode* node_game, bool port_section)
 		else if (S_CMPNOCASE(node->getName(), "long_names"))
 			supported_features_[Feature::LongNames] = node->boolValue();
 
+		// Material colors
+		else if (S_CMPNOCASE(node->getName(), "material_colors"))
+			supported_features_[Feature::MaterialColors] = node->boolValue();
+
 		READ_BOOL(udmf_features_[UDMFFeature::Slopes], udmf_slopes); // UDMF slopes
 		READ_BOOL(udmf_features_[UDMFFeature::FlatLighting], udmf_flat_lighting); // UDMF flat lighting
 		READ_BOOL(udmf_features_[UDMFFeature::FlatPanning], udmf_flat_panning); // UDMF flat panning
